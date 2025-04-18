@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import pickle
 import joblib
+import gdown
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -17,23 +18,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-
-# Base directory: current directory of main.py
+# Base directory: same as where main.py is
 base_dir = os.path.dirname(os.path.abspath(__file__))
+notebooks_dir = base_dir  # You can change to another directory if needed
 
-# Load saved data and model
-with open(os.path.join(base_dir, '../notebooks/cosine_sim2.pkl'), 'rb') as f:
-    cosine_sim = pickle.load(f)
+# Google Drive File IDs
+PKL_FILES = {
+    "cosine_sim2.pkl": "1cFuoDQOKzyHKawDZF_6kiIghS4jWDS2X",
+    "df2.pkl": "1M8j_fLvveEyvQvnWOrRPZTmOr-Dtm79p",
+    "indices.pkl": "1Batss1ibIUw_8arhrE5JcjM-huxHyTMQ",
+    "svd_model.pkl": "1OblWzoQ6PSKluX132c4l-l3pyqVF_o3t"
+}
 
-with open(os.path.join(base_dir, '../notebooks/df2.pkl'), 'rb') as f:
-    df2 = pickle.load(f)
+# Download helper
+def gdrive_download_if_missing(filename, file_id):
+    filepath = os.path.join(notebooks_dir, filename)
+    if not os.path.exists(filepath):
+        print(f"Downloading {filename} from Google Drive...")
+        gdown.download(f"https://drive.google.com/uc?id={file_id}", filepath, quiet=False)
+    return filepath
 
-with open(os.path.join(base_dir, '../notebooks/indices.pkl'), 'rb') as f:
-    indices = pickle.load(f)
-
-svd_model = joblib.load(os.path.join(base_dir, '../notebooks/svd_model.pkl'))
+# Load files (auto-download if not found)
+cosine_sim = pickle.load(open(gdrive_download_if_missing("cosine_sim2.pkl", PKL_FILES["cosine_sim2.pkl"]), 'rb'))
+df2 = pickle.load(open(gdrive_download_if_missing("df2.pkl", PKL_FILES["df2.pkl"]), 'rb'))
+indices = pickle.load(open(gdrive_download_if_missing("indices.pkl", PKL_FILES["indices.pkl"]), 'rb'))
+svd_model = joblib.load(gdrive_download_if_missing("svd_model.pkl", PKL_FILES["svd_model.pkl"]))
 
 
 # Recommendation logic
