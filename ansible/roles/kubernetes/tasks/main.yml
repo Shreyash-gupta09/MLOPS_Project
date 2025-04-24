@@ -1,3 +1,4 @@
+---
 - name: Install Minikube dependencies (kubectl, virtualbox)
   apt:
     name: ["kubectl", "virtualbox"]
@@ -22,9 +23,11 @@
   changed_when: false
   failed_when: "'Running' not in minikube_status.stdout"
 
-- name: Print Minikube IP
+- name: Get Minikube IP  # ✅ Corrected
   command: minikube ip
   register: minikube_ip
   changed_when: false
+
+- name: Print Minikube IP  # ✅ Corrected
   debug:
     msg: "Minikube is running at {{ minikube_ip.stdout }}"
