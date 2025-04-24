@@ -13,6 +13,14 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
             }
         }
+        
+        stage('Infrastructure Setup') {
+            steps {
+                dir('ansible') {  // Assumes ansible/ is in your repo root
+                sh 'ansible-playbook -i inventory.ini site.yml'
+                }
+            }
+        }
 
         stage('Build Backend Docker Image') {
             steps {

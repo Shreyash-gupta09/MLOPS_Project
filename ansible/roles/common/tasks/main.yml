@@ -1,0 +1,24 @@
+- name: Install Python and Git (if missing)
+  apt:
+    name: ["python3", "git"]
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure Docker is installed (skip if already present)
+  apt:
+    name: docker-ce
+    state: present
+  when: ansible_os_family == 'Debian'
+  ignore_errors: yes  # Avoid errors if Docker is pre-installed
+
+- name: Ensure Docker Compose is installed
+  apt:
+    name: docker-compose
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Start Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

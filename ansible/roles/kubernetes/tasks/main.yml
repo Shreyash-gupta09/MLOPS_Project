@@ -1,0 +1,30 @@
+- name: Install Minikube dependencies (kubectl, virtualbox)
+  apt:
+    name: ["kubectl", "virtualbox"]
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Download and install Minikube
+  get_url:
+    url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    dest: /usr/local/bin/minikube
+    mode: '0755'
+
+- name: Start Minikube cluster
+  command: minikube start --driver=virtualbox
+  become_user: "{{ ansible_user }}"
+  environment:
+    CHANGE_MINIKUBE_NONE_USER: true
+
+- name: Verify Minikube status
+  command: minikube status
+  register: minikube_status
+  changed_when: false
+  failed_when: "'Running' not in minikube_status.stdout"
+
+- name: Print Minikube IP
+  command: minikube ip
+  register: minikube_ip
+  changed_when: false
+  debug:
+    msg: "Minikube is running at {{ minikube_ip.stdout }}"

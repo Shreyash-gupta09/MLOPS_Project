@@ -1,0 +1,18 @@
+version: '3'
+services:
+  elasticsearch:
+    image: elasticsearch:7.14.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+  logstash:
+    image: logstash:7.14.0
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logstash.conf:/etc/logstash/conf.d/logstash.conf
+  kibana:
+    image: kibana:7.14.0
+    ports:
+      - "5601:5601"
