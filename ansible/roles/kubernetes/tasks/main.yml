@@ -1,23 +1,9 @@
 ---
-- name: Add Google Cloud apt key
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    state: present
-
-- name: Add Kubernetes apt repository
-  apt_repository:
-    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
-    state: present
-    filename: kubernetes
-
-- name: Update apt cache
-  apt:
-    update_cache: yes
-
-- name: Install kubectl and VirtualBox
+- name: Install Minikube dependencies (kubectl, virtualbox)
   apt:
     name: ["kubectl", "virtualbox"]
     state: present
+  when: ansible_os_family == 'Debian'
 
 - name: Download and install Minikube
   get_url:
@@ -27,9 +13,9 @@
 
 - name: Start Minikube cluster
   command: minikube start --driver=virtualbox
-  become_user: "{{ minikube_user }}"
+  become_user: "{{ ansible_user }}"
   environment:
-    CHANGE_MINIKUBE_NONE_USER: "true"
+    CHANGE_MINIKUBE_NONE_USER: true
 
 - name: Verify Minikube status
   command: minikube status
@@ -42,6 +28,6 @@
   register: minikube_ip
   changed_when: false
 
-- name: Print Minikube IP
+- name: Display Minikube IP
   debug:
-    msg: "✅ Minikube is running at {{ minikube_ip.stdout }}"
+    msg: "Minikube is running at {{ minikube_ip.stdout }}"
