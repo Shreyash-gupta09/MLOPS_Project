@@ -1,54 +1,47 @@
 ---
-- name: Install Minikube and dependencies on Debian
-  hosts: localhost
-  become: true
-  vars:
-    minikube_user: "{{ ansible_user }}"
-  tasks:
+- name: Add Google Cloud apt key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
 
-    - name: Add Google Cloud apt key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+- name: Add Kubernetes apt repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes
 
-    - name: Add Kubernetes apt repository
-      apt_repository:
-        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
-        state: present
-        filename: kubernetes
+- name: Update apt cache
+  apt:
+    update_cache: yes
 
-    - name: Update apt cache
-      apt:
-        update_cache: yes
+- name: Install kubectl and VirtualBox
+  apt:
+    name: ["kubectl", "virtualbox"]
+    state: present
 
-    - name: Install kubectl and VirtualBox
-      apt:
-        name: ["kubectl", "virtualbox"]
-        state: present
+- name: Download and install Minikube
+  get_url:
+    url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    dest: /usr/local/bin/minikube
+    mode: '0755'
 
-    - name: Download and install Minikube
-      get_url:
-        url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        dest: /usr/local/bin/minikube
-        mode: '0755'
+- name: Start Minikube cluster
+  command: minikube start --driver=virtualbox
+  become_user: "{{ minikube_user }}"
+  environment:
+    CHANGE_MINIKUBE_NONE_USER: "true"
 
-    - name: Start Minikube cluster
-      command: minikube start --driver=virtualbox
-      become_user: "{{ minikube_user }}"
-      environment:
-        CHANGE_MINIKUBE_NONE_USER: "true"
+- name: Verify Minikube status
+  command: minikube status
+  register: minikube_status
+  changed_when: false
+  failed_when: "'Running' not in minikube_status.stdout"
 
-    - name: Verify Minikube status
-      command: minikube status
-      register: minikube_status
-      changed_when: false
-      failed_when: "'Running' not in minikube_status.stdout"
+- name: Get Minikube IP
+  command: minikube ip
+  register: minikube_ip
+  changed_when: false
 
-    - name: Get Minikube IP
-      command: minikube ip
-      register: minikube_ip
-      changed_when: false
-
-    - name: Print Minikube IP
-      debug:
-        msg: "✅ Minikube is running at {{ minikube_ip.stdout }}"
+- name: Print Minikube IP
+  debug:
+    msg: "✅ Minikube is running at {{ minikube_ip.stdout }}"
