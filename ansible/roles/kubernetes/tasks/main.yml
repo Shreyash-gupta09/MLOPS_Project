@@ -1,5 +1,23 @@
 - name: Install Minikube dependencies (kubectl)
   apt:
+    name: apt-transport-https
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add Kubernetes APT repository for kubectl
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Add Kubernetes APT repository to APT sources
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Install kubectl from Kubernetes repository
+  apt:
     name: kubectl
     state: present
   when: ansible_os_family == 'Debian'
@@ -9,6 +27,7 @@
     url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
     dest: /usr/local/bin/minikube
     mode: '0755'
+  when: ansible_os_family == 'Debian'
 
 - name: Start Minikube cluster using Docker driver
   command: minikube start --driver=docker
