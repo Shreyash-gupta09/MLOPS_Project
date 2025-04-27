@@ -4,12 +4,17 @@
     state: present
   when: ansible_os_family == 'Debian'
 
-- name: Ensure Docker is installed (skip if already present)
+- name: Check if Docker is installed
+  command: docker --version
+  register: docker_check
+  ignore_errors: yes  # This ensures we don't fail if Docker isn't installed
+
+- name: Ensure Docker is installed (if not already present)
   apt:
     name: docker-ce
     state: present
-  when: ansible_os_family == 'Debian'
-  ignore_errors: yes  # Avoid errors if Docker is pre-installed
+  when: docker_check.rc != 0  # Only install Docker if it's not already installed
+  ignore_errors: yes  # Avoid errors if Docker installation fails for some reason
 
 - name: Ensure Docker Compose is installed
   apt:
@@ -22,3 +27,4 @@
     name: docker
     state: started
     enabled: yes
+  when: docker_check.rc == 0  # Ensure the Docker service is only started if Docker was installed or is already present
