@@ -11,7 +11,7 @@
 
 - name: Ensure Docker is installed (if not already present)
   apt:
-    name: docker-ce
+    name: docker.io  # Use docker.io for WSL instead of docker-ce
     state: present
   when: docker_check.rc != 0  # Only install Docker if it's not already installed
   ignore_errors: yes  # Avoid errors if Docker installation fails for some reason

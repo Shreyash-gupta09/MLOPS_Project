@@ -1,7 +1,6 @@
----
-- name: Install Minikube dependencies (kubectl, virtualbox)
+- name: Install Minikube dependencies (kubectl)
   apt:
-    name: ["kubectl", "virtualbox"]
+    name: kubectl
     state: present
   when: ansible_os_family == 'Debian'
 
@@ -11,11 +10,13 @@
     dest: /usr/local/bin/minikube
     mode: '0755'
 
-- name: Start Minikube cluster
-  command: minikube start --driver=virtualbox
+- name: Start Minikube cluster using Docker driver
+  command: minikube start --driver=docker
+  become: true
   become_user: "{{ ansible_user }}"
   environment:
     CHANGE_MINIKUBE_NONE_USER: true
+  when: ansible_os_family == 'Debian'
 
 - name: Verify Minikube status
   command: minikube status
