@@ -8,3 +8,4 @@ indices.pkl
 svd_model.pkl
 
 minikube-linux-amd64
+/models
