@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME_BACKEND = 'divypagariya/ml-backend'   // Updated with your DockerHub username
-        IMAGE_NAME_FRONTEND = 'divypagariya/ml-frontend' // Updated with your DockerHub username
+        IMAGE_NAME_BACKEND = 'divypagariya/ml-backend:latest'
+        IMAGE_NAME_FRONTEND = 'divypagariya/ml-frontend:latest'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
     stages {
@@ -46,8 +47,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/backend-deployment.yml'  // Deploy backend to Kubernetes
-                sh 'kubectl apply -f k8s/frontend-deployment.yml' // Deploy frontend to Kubernetes
+                sh 'make deploy'
             }
         }
 

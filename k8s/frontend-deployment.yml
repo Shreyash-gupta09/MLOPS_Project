@@ -1,38 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: ml-frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: ml-frontend
   template:
     metadata:
       labels:
-        app: frontend
+        app: ml-frontend
     spec:
       containers:
-        - name: frontend
-          image: divypagariya/ml-frontend:latest
-          ports:
-            - containerPort: 80
-          env:
-            - name: REACT_APP_BACKEND_URL
-              value: "http://<MINIKUBE_IP>:8000"  # Replace with your actual Minikube IP or service URL
-      imagePullSecrets:
-        - name: dockerhub-secret  # This tells Kubernetes to use the secret to pull the image
-
+      - name: ml-frontend
+        image: divypagariya/ml-frontend:latest
+        ports:
+        - containerPort: 80   # ✅ must match Nginx port
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: ml-frontend-service
 spec:
   selector:
-    app: frontend
+    app: ml-frontend
   ports:
-    - protocol: TCP
-      port: 3000
-      targetPort: 80
-  type: NodePort
+  - protocol: TCP
+    port: 80        
+    targetPort: 80   
+  type: NodePort    
+
+
+# kubectl port-forward service/ml-frontend-service 8090:80

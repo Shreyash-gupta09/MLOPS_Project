@@ -1,18 +1,13 @@
 ---
-- name: Install common dependencies (Docker, Python, Git)
-  hosts: all_servers
-  become: true
+- name: Setup base system
+  hosts: all
+  become: yes
   roles:
     - common
 
-- name: Set up Kubernetes (Minikube)
-  hosts: localhost
-  become: true
+- name: Setup Docker and Kubernetes tools
+  hosts: k8s_servers
+  become: yes
   roles:
-    - kubernetes
-
-- name: Deploy ELK Stack
-  hosts: localhost
-  become: true
-  roles:
-    - elk
+    - docker_k8s
+    - minikube
