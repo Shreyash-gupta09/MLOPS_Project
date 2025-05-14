@@ -6,5 +6,6 @@
   args:
     creates: /usr/local/bin/minikube
 
-- name: Start Minikube cluster
-  shell: minikube start --driver=docker
+- name: Start Minikube cluster as root
+  command: minikube start --driver=docker --force
+  become: true
