@@ -6,7 +6,12 @@
   args:
     creates: /usr/local/bin/minikube
 
-- name: Start Minikube cluster as current user (non-root)
+- name: Delete existing Minikube cluster (if any)
+  command: minikube delete --all
+  ignore_errors: true  # Ignore errors in case Minikube is not initialized yet
+
+- name: Start Minikube with Docker driver
   command: minikube start --driver=docker
-  become: false
+  environment:
+    MINIKUBE_IN_STYLE: "false"  # Optional: disables colored output for cleaner logs
 
