@@ -1,5 +1,6 @@
 ---
-- name: Install Minikube
+- name: Install Minikube (as root)
+  become: true
   shell: |
     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
     install minikube-linux-amd64 /usr/local/bin/minikube
@@ -7,11 +8,12 @@
     creates: /usr/local/bin/minikube
 
 - name: Delete existing Minikube cluster (if any)
+  become: true
   command: minikube delete --all
-  ignore_errors: true  # Ignore errors in case Minikube is not initialized yet
+  ignore_errors: true
 
-- name: Start Minikube with Docker driver
+- name: Start Minikube with Docker driver (as non-root user)
+  become: false
   command: minikube start --driver=docker
   environment:
-    MINIKUBE_IN_STYLE: "false"  # Optional: disables colored output for cleaner logs
-
+    MINIKUBE_IN_STYLE: "false"
