@@ -13,7 +13,7 @@
 
 - name: Start Minikube with Docker driver (as non-root user)
   become: false
-  command: minikube start --driver=docker
+  command: minikube start --driver=docker --ports=30080:30080,30090:30090
   environment:
     MINIKUBE_IN_STYLE: "false"
 
