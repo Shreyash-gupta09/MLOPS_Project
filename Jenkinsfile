@@ -31,7 +31,7 @@ pipeline {
                 stage('Build Backend') {
                     steps {
                         dir('app/backend') {
-                            sh "docker build -t $IMAGE_NAME_BACKEND ."
+                            sh "docker build -t $IMAGE_NAME_BACKEND -f app/backend/Dockerfile ."
                         }
                     }
                 }
