@@ -100,7 +100,7 @@ print('All files downloaded to /models folder.')
                 )]) {
                     sh '''
                         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                        docker push $IMAGE_NAME_BACKEND
+                        # docker push $IMAGE_NAME_BACKEND
                         docker push $IMAGE_NAME_FRONTEND
                     '''
                 }
