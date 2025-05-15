@@ -90,13 +90,11 @@ pipeline {
 
     post {
         success {
-            slackSend(color: 'good', message: "SUCCESS: Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}")
             echo 'Deployment successful! Access:'
             echo 'Frontend: http://localhost:8090'
             echo 'Backend: http://localhost:8000'
         }
         failure {
-            slackSend(color: 'danger', message: "FAILED: Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}")
             echo 'Deployment failed! Check logs for details.'
         }
     }
