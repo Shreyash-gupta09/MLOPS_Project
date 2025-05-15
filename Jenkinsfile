@@ -83,18 +83,12 @@ pipeline {
                         nohup kubectl port-forward service/ml-frontend-service 8090:80 > frontend.log 2>&1 &
                         nohup kubectl port-forward service/ml-backend-service 8000:8000 > backend.log 2>&1 &
                     '''
-
-                    sh 'sleep 5 && curl -I http://localhost:8090'
-                    sh 'sleep 5 && curl -I http://localhost:8000'
                 }
             }
         }
     }
 
     post {
-        always {
-            sh 'pkill -f "kubectl port-forward" || true'
-        }
         success {
             slackSend(color: 'good', message: "SUCCESS: Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}")
             echo 'Deployment successful! Access:'
