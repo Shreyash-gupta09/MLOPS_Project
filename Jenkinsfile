@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'dvc_arch', 
+                git branch: 'light_model', 
                     url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
             }
         }
