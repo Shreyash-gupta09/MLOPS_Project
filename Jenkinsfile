@@ -67,8 +67,8 @@ pipeline {
                     sh 'kubectl apply -f .'
 
                     sh '''
-                        kubectl wait --for=condition=available --timeout=50s deployment/ml-backend
-                        kubectl wait --for=condition=available --timeout=50s deployment/ml-frontend
+                        kubectl wait --for=condition=available --timeout=480s deployment/ml-backend
+                        kubectl wait --for=condition=available --timeout=480s deployment/ml-frontend
                     '''
                 }
             }
