@@ -30,7 +30,7 @@ pipeline {
             parallel {
                 stage('Build Backend') {
                     steps {
-                        dir('app/backend') {
+                        dir('.') {
                             sh "docker build -t $IMAGE_NAME_BACKEND -f app/backend/Dockerfile ."
                         }
                     }
