@@ -1,0 +1,56 @@
+---
+- name: Install Java (default-jre and default-jdk)
+  apt:
+    name:
+      - default-jre
+      - default-jdk
+    state: present
+    update_cache: yes
+
+- name: Add Elasticsearch GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elasticsearch APT repo
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+    filename: elastic-7.x
+    state: present
+
+- name: Update APT cache after adding Elasticsearch repo
+  apt:
+    update_cache: yes
+
+- name: Install Elasticsearch
+  apt:
+    name: elasticsearch
+    state: present
+
+- name: Enable and start Elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
+- name: Install Logstash
+  apt:
+    name: logstash
+    state: present
+
+- name: Enable and start Logstash
+  systemd:
+    name: logstash
+    enabled: yes
+    state: started
+
+- name: Install Kibana
+  apt:
+    name: kibana
+    state: present
+
+- name: Enable and start Kibana
+  systemd:
+    name: kibana
+    enabled: yes
+    state: started

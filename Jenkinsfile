@@ -47,15 +47,31 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/backend-deployment.yml'
-                sh 'kubectl apply -f k8s/frontend-deployment.yml'
+                sh 'kubectl apply -f k8s/'
+                
             }
         }
 
-        stage('Post-Deployment Tasks with Ansible') {
+        stage('Wait for Pods to be Ready') {
             steps {
-                sh 'ansible-playbook -i inventory.ini post_deploy.yml'
+                sh 'kubectl rollout status deployment/backend-deployment'
+                sh 'kubectl rollout status deployment/frontend-deployment'
             }
         }
+
+        stage('Post-Deployment Verification') {
+            steps {
+                sh 'kubectl get pods'
+                sh 'kubectl get svc'
+                sh 'kubectl get services'
+                sh 'kubectl get hpa'
+            }
+        }
+
+        // stage('Post-Deployment Tasks with Ansible') {
+        //     steps {
+        //         sh 'ansible-playbook -i inventory.ini post_deploy.yml'
+        //     }
+        // }
     }
 }

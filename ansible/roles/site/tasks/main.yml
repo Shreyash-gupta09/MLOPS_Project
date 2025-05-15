@@ -1,0 +1,3 @@
+- name: Deploy app or configuration (placeholder)
+  debug:
+    msg: "This is where your app deployment would go."

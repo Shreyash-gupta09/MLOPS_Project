@@ -14,7 +14,7 @@ function App() {
     setShowResults(false); // Hide old results while loading
 
     try {
-      const response = await fetch(`http://localhost:8000/recommend/${movieName}`);
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/recommend/${movieName}`);
       const data = await response.json();
       setRecommendations(data);
       setShowResults(true); // Show results after fetching

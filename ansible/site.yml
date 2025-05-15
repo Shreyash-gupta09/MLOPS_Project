@@ -1,0 +1,9 @@
+- name: Setup full infra
+  hosts: all
+  become: yes
+  roles:
+    - common
+    - docker
+    - k8s
+    - elk
+    - site
