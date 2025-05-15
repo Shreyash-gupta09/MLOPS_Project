@@ -26,9 +26,11 @@ pipeline {
             }
         }
 
-        stage('Install DVC') {
+       stage('Upgrade Crypto and Install DVC') {
             steps {
-                sh 'pip install dvc[gdrive]'
+                sh '''
+                    pip install --upgrade cryptography pyopenssl dvc[gdrive]
+                '''
             }
         }
 
