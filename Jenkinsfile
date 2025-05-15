@@ -34,7 +34,10 @@ pipeline {
 
         stage('Pull DVC Models') {
             steps {
-                sh 'dvc pull'
+                sh '''
+                    export PATH=$HOME/.local/bin:$PATH
+                    dvc pull
+                '''
             }
         }
 
