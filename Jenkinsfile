@@ -36,8 +36,18 @@ pipeline {
         stage('Download Models') {
             steps {
                 sh '''
-                    pip install --quiet gdown
-                    python -c "
+                    # Use python3 explicitly and make sure pip is installed
+                    sudo apt-get update
+                    sudo apt-get install -y python3 python3-pip
+
+                    # Install gdown in user space
+                    python3 -m pip install --user gdown
+
+                    # Add ~/.local/bin to PATH so gdown is available
+                    export PATH=$PATH:/var/lib/jenkins/.local/bin
+
+                    # Python script to download files
+                    python3 -c "
 import os
 import gdown
 
@@ -57,8 +67,8 @@ for filename, file_id in PKL_FILES.items():
     gdown.download(url, output_path, quiet=False)
 
 print('All files downloaded to /models folder.')
-                    "
-                '''
+            "
+        '''
             }
         }
 
