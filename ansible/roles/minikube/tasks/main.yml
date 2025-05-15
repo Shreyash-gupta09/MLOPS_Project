@@ -1,4 +1,3 @@
----
 - name: Install Minikube (as root)
   become: true
   shell: |
@@ -12,8 +11,24 @@
   command: minikube delete --all
   ignore_errors: true
 
+- name: Cleanup old minikube docker container (if any)
+  become: true
+  shell: |
+    docker rm -f minikube || true
+    docker network prune -f
+  ignore_errors: true
+
 - name: Start Minikube with Docker driver (as non-root user)
   become: false
   command: minikube start --driver=docker
   environment:
     MINIKUBE_IN_STYLE: "false"
+
+- name: Get minikube logs
+  become: false
+  command: minikube logs
+  register: minikube_logs
+
+- debug:
+    var: minikube_logs.stdout_lines
+
