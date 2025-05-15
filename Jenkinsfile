@@ -107,18 +107,18 @@ print('All files downloaded to /models folder.')
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                dir('k8s') {
-                    sh 'kubectl apply -f .'
+        // stage('Deploy to Kubernetes') {
+        //     steps {
+        //         dir('k8s') {
+        //             sh 'kubectl apply -f .'
 
-                    sh '''
-                        kubectl wait --for=condition=available --timeout=100s deployment/ml-backend
-                        kubectl wait --for=condition=available --timeout=100s deployment/ml-frontend
-                    '''
-                }
-            }
-        }
+        //             sh '''
+        //                 kubectl wait --for=condition=available --timeout=100s deployment/ml-backend
+        //                 kubectl wait --for=condition=available --timeout=100s deployment/ml-frontend
+        //             '''
+        //         }
+        //     }
+        // }
 
         stage('Port Forwarding') {
             steps {
