@@ -20,8 +20,6 @@ spec:
         env:
         - name: PYTHONPATH
           value: /app
-      imagePullSecrets:
-      - name: dockerhub-creds
 
 ---
 apiVersion: v1
@@ -36,6 +34,5 @@ spec:
     port: 8000
     targetPort: 8000
   type: NodePort
-
 
 # kubectl port-forward svc/ml-backend-service 8000:8000
