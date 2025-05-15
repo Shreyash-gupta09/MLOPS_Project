@@ -114,7 +114,7 @@ print('All files downloaded to /models folder.')
 
                     sh '''
                         kubectl wait --for=condition=available --timeout=100s deployment/ml-backend
-                        kubectl wait --for=condition=available --timeout=10s deployment/ml-frontend
+                        kubectl wait --for=condition=available --timeout=100s deployment/ml-frontend
                     '''
                 }
             }
