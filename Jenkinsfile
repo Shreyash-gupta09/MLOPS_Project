@@ -2,17 +2,17 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME_BACKEND = 'divypagariya/ml-backend:latest'
-        IMAGE_NAME_FRONTEND = 'divypagariya/ml-frontend:latest'
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
-        KUBE_NAMESPACE = 'default'
+        IMAGE_NAME_BACKEND     = 'divypagariya/ml-backend:latest'
+        IMAGE_NAME_FRONTEND    = 'divypagariya/ml-frontend:latest'
+        DOCKER_CREDENTIALS_ID  = 'dockerhub-credentials'
+        KUBE_NAMESPACE         = 'default'
     }
 
     stages {
         stage('Clone Repository') {
             steps {
                 git branch: 'dvc_arch', 
-                url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
+                    url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
             }
         }
 
@@ -20,13 +20,12 @@ pipeline {
             steps {
                 dir('ansible') {
                     sh 'ansible-playbook -i inventory.ini site.yml'
-                    // Start Minikube if not running
                     sh 'minikube status || minikube start --driver=docker'
                 }
             }
         }
 
-       stage('Upgrade Crypto and Install DVC') {
+        stage('Upgrade Crypto and Install DVC') {
             steps {
                 sh '''
                     pip install --upgrade cryptography pyopenssl dvc[gdrive]
@@ -34,15 +33,34 @@ pipeline {
             }
         }
 
-        stage('Pull DVC Models') {
+        stage('Download Models') {
             steps {
                 sh '''
-                    export PATH=$HOME/.local/bin:$PATH
-                    dvc pull
+                    pip install --quiet gdown
+                    python -c "
+import os
+import gdown
+
+PKL_FILES = {
+    'cosine_sim2.pkl': '1cFuoDQOKzyHKawDZF_6kiIghS4jWDS2X',
+    'df2.pkl': '1M8j_fLvveEyvQvnWOrRPZTmOr-Dtm79p',
+    'indices.pkl': '1Batss1ibIUw_8arhrE5JcjM-huxHyTMQ',
+    'svd_model.pkl': '1OblWzoQ6PSKluX132c4l-l3pyqVF_o3t'
+}
+
+os.makedirs('models', exist_ok=True)
+
+for filename, file_id in PKL_FILES.items():
+    url = f'https://drive.google.com/uc?id={file_id}'
+    output_path = os.path.join('models', filename)
+    print(f'Downloading {filename}...')
+    gdown.download(url, output_path, quiet=False)
+
+print('All files downloaded to /models folder.')
+                    "
                 '''
             }
         }
-
 
         stage('Build Docker Images') {
             parallel {
@@ -71,9 +89,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     sh '''
-                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                    docker push $IMAGE_NAME_BACKEND
-                    docker push $IMAGE_NAME_FRONTEND
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push $IMAGE_NAME_BACKEND
+                        docker push $IMAGE_NAME_FRONTEND
                     '''
                 }
             }
@@ -82,13 +100,11 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 dir('k8s') {
-                    // Apply all manifests in the k8s directory
                     sh 'kubectl apply -f .'
-                    
-                    // Wait for deployments to be ready
+
                     sh '''
-                    kubectl wait --for=condition=available --timeout=300s deployment/ml-backend
-                    kubectl wait --for=condition=available --timeout=300s deployment/ml-frontend
+                        kubectl wait --for=condition=available --timeout=300s deployment/ml-backend
+                        kubectl wait --for=condition=available --timeout=300s deployment/ml-frontend
                     '''
                 }
             }
@@ -97,16 +113,13 @@ pipeline {
         stage('Port Forwarding') {
             steps {
                 script {
-                    // Kill existing port-forward processes
                     sh 'pkill -f "kubectl port-forward" || true'
-                    
-                    // Start port forwarding in background
+
                     sh '''
-                    nohup kubectl port-forward service/ml-frontend-service 8090:80 > frontend.log 2>&1 &
-                    nohup kubectl port-forward service/ml-backend-service 8000:8000 > backend.log 2>&1 &
+                        nohup kubectl port-forward service/ml-frontend-service 8090:80 > frontend.log 2>&1 &
+                        nohup kubectl port-forward service/ml-backend-service 8000:8000 > backend.log 2>&1 &
                     '''
-                    
-                    // Verify port forwarding
+
                     sh 'sleep 5 && curl -I http://localhost:8090'
                     sh 'sleep 5 && curl -I http://localhost:8000'
                 }
@@ -116,7 +129,6 @@ pipeline {
 
     post {
         always {
-            // Cleanup - kill any remaining port-forward processes
             sh 'pkill -f "kubectl port-forward" || true'
         }
         success {
