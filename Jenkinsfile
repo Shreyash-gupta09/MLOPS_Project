@@ -26,6 +26,19 @@ pipeline {
             }
         }
 
+        stage('Install DVC') {
+            steps {
+                sh 'pip install dvc[gdrive]'
+            }
+        }
+
+        stage('Pull DVC Models') {
+            steps {
+                sh 'dvc pull'
+            }
+        }
+
+
         stage('Build Docker Images') {
             parallel {
                 stage('Build Backend') {
