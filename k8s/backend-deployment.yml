@@ -33,6 +33,7 @@ spec:
   - protocol: TCP
     port: 8000
     targetPort: 8000
+    nodePort: 30090
   type: NodePort
 
 # kubectl port-forward svc/ml-backend-service 8000:8000

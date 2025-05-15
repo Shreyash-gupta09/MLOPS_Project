@@ -72,26 +72,14 @@ pipeline {
                 }
             }
         }
-
-        stage('Port Forwarding') {
-            steps {
-                script {
-                    sh 'pkill -f "kubectl port-forward" || true'
-
-                    sh '''
-                        nohup kubectl port-forward service/ml-frontend-service 8090:80 > frontend.log 2>&1 &
-                        nohup kubectl port-forward service/ml-backend-service 8000:8000 > backend.log 2>&1 &
-                    '''
-                }
-            }
-        }
     }
 
     post {
         success {
             echo 'Deployment successful! Access:'
-            echo 'Frontend: http://localhost:8090'
-            echo 'Backend: http://localhost:8000'
+            echo 'Frontend: http://localhost:30080'
+            echo 'Backend: http://localhost:30090'
+
         }
         failure {
             echo 'Deployment failed! Check logs for details.'
