@@ -20,6 +20,7 @@ pipeline {
             steps {
                 dir('ansible') {
                     sh 'ansible-playbook -i inventory.ini site.yml'
+                    sh 'minicube delete'
                     sh 'minikube status || minikube start --driver=docker'
                 }
             }
