@@ -6,6 +6,10 @@
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   args:
     creates: /usr/local/bin/minikube
+    
+- name: Ensure Minikube is not running from previous failed start
+  shell: minikube delete || true
+  ignore_errors: true
 
 - name: Start Minikube
   shell: minikube start --driver=docker
