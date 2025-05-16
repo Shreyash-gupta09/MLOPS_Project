@@ -14,11 +14,14 @@
     regexp: '.*mlops\.local'
     state: absent
     
-- name: Clean up old Minikube and Kubernetes configs
+- name: Clean up Minikube containers and Docker networks
   shell: |
+    docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
+    docker network prune -f
     minikube delete --all --purge
     rm -rf ~/.minikube ~/.kube
   ignore_errors: true
+
 
 
 
