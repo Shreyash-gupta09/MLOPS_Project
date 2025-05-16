@@ -12,7 +12,7 @@
   ignore_errors: true
 
 - name: Start Minikube
-  shell: minikube start --driver=docker
+  shell: minikube start --driver=docker --ports=30080:30080,30000:30000
   become: false
   environment:
     PATH: "{{ ansible_env.PATH }}"
