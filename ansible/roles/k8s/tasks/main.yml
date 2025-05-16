@@ -6,6 +6,13 @@
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   args:
     creates: /usr/local/bin/minikube
+
+- name: Remove any stale mlops.local entries BEFORE starting Minikube
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    regexp: '.*mlops\.local'
+    state: absent
     
 - name: Clean up old Minikube and Kubernetes configs
   shell: |
