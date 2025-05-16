@@ -58,22 +58,20 @@ pipeline {
             steps {
                 sh 'kubectl rollout status deployment/backend-deployment'
                 sh 'kubectl rollout status deployment/frontend-deployment'
+                sh 'kubectl wait --for=condition=ready pod --all --timeout=2000s' // 1800s = 30 minutes
             }
         }
 
         stage('Post-Deployment Verification') {
             steps {
-                sh 'kubectl get pods'
-                sh 'kubectl get svc'
-                sh 'kubectl get hpa'
+                sh 'echo "Pods:" && kubectl get pods'
+                sh 'echo "Services:" && kubectl get svc'
+                sh 'echo "Horizontal Pod Autoscalers:" && kubectl get hpa'
+                sh 'echo "Deployments:" && kubectl get deployments'
             }
         }
 
-        // Uncomment if post-deployment Ansible tasks are needed
-        // stage('Post-Deployment Tasks with Ansible') {
-        //     steps {
-        //         sh 'ansible-playbook -i inventory.ini post_deploy.yml'
-        //     }
-        // }
+
+       
     }
 }
