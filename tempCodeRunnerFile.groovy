@@ -1,0 +1,1 @@
+docker build -t $IMAGE_NAME_BACKEND -f ml-model/Dockerfile.backend ml-model
