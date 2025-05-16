@@ -7,39 +7,72 @@
   args:
     creates: /usr/local/bin/minikube
 
-- name: Remove any stale mlops.local entries BEFORE starting Minikube
+- name: Remove any stale mlops.local entries from /etc/hosts
   become: true
   lineinfile:
     path: /etc/hosts
     regexp: '.*mlops\.local'
     state: absent
     
-- name: Clean up Minikube containers and Docker networks
+- name: Thorough Minikube cleanup
   shell: |
+    # Stop any running minikube
+    minikube stop || true
+    
+    # Delete all minikube clusters with purge option
+    minikube delete --all --purge || true
+    
+    # Remove docker containers related to minikube
     docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
+    docker container rm -f $(docker ps -a -q --filter "name=k8s_") || true
+    
+    # Clean docker networks
     docker network prune -f
-    minikube delete --all --purge
+    
+    # Remove minikube-related directories
     rm -rf ~/.minikube ~/.kube
+    
+    # Clean docker resources
+    docker system prune -f
   ignore_errors: true
 
+- name: Sleep for a moment to ensure cleanup is complete
+  pause:
+    seconds: 10
 
-
-
-- name: Start Minikube
-  shell: minikube start --driver=docker 
+- name: Start Minikube with increased memory and specific parameters
+  shell: minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
   become: false
+  register: minikube_start
   environment:
     PATH: "{{ ansible_env.PATH }}"
+  retries: 2
+  delay: 10
+  until: minikube_start.rc == 0
 
 - name: Enable Ingress controller in Minikube
   shell: minikube addons enable ingress
   become: false
   environment:
     PATH: "{{ ansible_env.PATH }}"
+  register: ingress_enable
+  retries: 2
+  delay: 5
+  until: ingress_enable.rc == 0
+
+- name: Get Minikube IP
+  shell: minikube ip
+  become: false
+  register: minikube_ip
+  environment:
+    PATH: "{{ ansible_env.PATH }}"
+  retries: 3
+  delay: 5
+  until: minikube_ip.rc == 0
 
 - name: Add mlops.local to /etc/hosts
   become: true
   lineinfile:
     path: /etc/hosts
-    line: "{{ lookup('pipe', 'minikube ip') }} mlops.local"
+    line: "{{ minikube_ip.stdout }} mlops.local"
     state: present
