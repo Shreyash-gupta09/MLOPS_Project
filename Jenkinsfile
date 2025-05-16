@@ -68,6 +68,8 @@ pipeline {
                     sh '''
                         kubectl rollout status deployment/ml-backend --timeout=480s
                         kubectl rollout status deployment/ml-frontend --timeout=480s
+                        kubectl get pods
+                        kubectl get svc
                     '''
                 }
             }
