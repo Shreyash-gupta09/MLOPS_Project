@@ -34,6 +34,9 @@ train_data = data[features].fillna('')
 for feature in features:
     train_data[feature] = train_data[feature].apply(clean_data)
 
+# Create the 'soup' column by combining key features
+train_data['soup'] = train_data['director'] + ' ' + train_data['cast'] + ' ' + train_data['listed_in'] + ' ' + train_data['description']
+
 # Save cleaned data to CSV
 train_data.to_csv("cleaned_data.csv", index=False)
 
