@@ -1,3 +1,4 @@
+# backend-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,5 +10,4 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-      nodePort: 30080  # Manually specify a stable NodePort (optional but recommended)
-  type: NodePort
+  type: ClusterIP

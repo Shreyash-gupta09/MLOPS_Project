@@ -12,7 +12,13 @@
   ignore_errors: true
 
 - name: Start Minikube
-  shell: minikube start --driver=docker --ports=30080:30080,30000:30000
+  shell: minikube start --driver=docker 
+  become: false
+  environment:
+    PATH: "{{ ansible_env.PATH }}"
+
+- name: Enable Ingress controller in Minikube
+  shell: minikube addons enable ingress
   become: false
   environment:
     PATH: "{{ ansible_env.PATH }}"

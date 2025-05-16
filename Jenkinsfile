@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME_BACKEND = 'shreyash0901/ml-backend'
         IMAGE_NAME_FRONTEND = 'shreyash0901/ml-frontend'
-        REACT_APP_API_BASE_URL= 'http://192.168.49.2:30080'
+        REACT_APP_API_BASE_URL= 'http://mlops.local/api'
     }
 
     stages {
