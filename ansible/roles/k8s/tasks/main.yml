@@ -6,7 +6,7 @@
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   args:
     creates: /usr/local/bin/minikube
-
+  
 - name: Remove old .minikube directory (clean stale state)
   file:
     path: "{{ ansible_env.HOME }}/.minikube"
@@ -16,35 +16,30 @@
   file:
     path: "{{ ansible_env.HOME }}/.kube"
     state: absent
-
-- name: Delete any running Minikube instance
+    
+- name: Ensure Minikube is not running from previous failed start
   shell: minikube delete || true
   ignore_errors: true
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
 
-- name: Start Minikube with Docker driver (retry on failure)
-  shell: minikube start --driver=docker
-  retries: 3
-  delay: 30
-  register: minikube_result
-  until: minikube_result.rc == 0
+- name: Start Minikube
+  shell: minikube start --driver=docker 
   become: false
   environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    PATH: "{{ ansible_env.PATH }}"
 
 - name: Wait for Minikube IP to be available
   shell: |
     until minikube ip >/dev/null 2>&1; do sleep 5; done
   become: false
   environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    PATH: "{{ ansible_env.PATH }}"
+
 
 - name: Enable Ingress controller in Minikube
   shell: minikube addons enable ingress
   become: false
   environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    PATH: "{{ ansible_env.PATH }}"
 
 - name: Add mlops.local to /etc/hosts
   become: true
