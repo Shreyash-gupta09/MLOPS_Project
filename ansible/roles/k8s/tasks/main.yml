@@ -7,11 +7,12 @@
   args:
     creates: /usr/local/bin/minikube
     
-- name: Clean up old Minikube profile
+- name: Clean up old Minikube and Kubernetes configs
   shell: |
-    minikube delete
+    minikube delete --all --purge
     rm -rf ~/.minikube ~/.kube
   ignore_errors: true
+
 
 
 - name: Start Minikube
