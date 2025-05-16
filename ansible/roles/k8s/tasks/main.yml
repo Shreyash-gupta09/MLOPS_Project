@@ -23,3 +23,9 @@
   environment:
     PATH: "{{ ansible_env.PATH }}"
 
+- name: Add mlops.local to /etc/hosts
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ lookup('pipe', 'minikube ip') }} mlops.local"
+    state: present
