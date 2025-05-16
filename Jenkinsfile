@@ -17,7 +17,7 @@ pipeline {
         stage('Infrastructure Setup') {
             steps {
                 dir('ansible') {  // Assumes ansible/ is in your repo root
-                sh 'ansible-playbook -i hosts site.yml --become'
+                sh 'ansible-playbook -i inventory.ini site.yml'
 
                 }
             }
