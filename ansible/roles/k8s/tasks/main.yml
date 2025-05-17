@@ -30,7 +30,7 @@
     seconds: 10
 
 - name: Start Minikube with increased memory and specific parameters
-  shell: minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
+  shell: minikube start --driver=docker --kubernetes-version=stable --delete-on-failure=true
   become: false
   register: minikube_start
   environment:

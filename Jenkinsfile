@@ -23,16 +23,16 @@ pipeline {
             }
         }
 
-        stage('ELK Stack Setup') {
-            steps {
-                sh '''
-                    kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
-                    kubectl apply -f k8s/elk/ -n logging
-                    kubectl apply -f k8s/elk/fluent-bit/ -n logging
-                    kubectl get pods -n logging
-                '''
-            }
-        }
+        // stage('ELK Stack Setup') {
+        //     steps {
+        //         sh '''
+        //             kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
+        //             kubectl apply -f k8s/elk/ -n logging
+        //             kubectl apply -f k8s/elk/fluent-bit/ -n logging
+        //             kubectl get pods -n logging
+        //         '''
+        //     }
+        // }
 
         stage('Build Backend Docker Image') {
             steps {
