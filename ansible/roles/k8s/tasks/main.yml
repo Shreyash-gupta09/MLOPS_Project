@@ -20,17 +20,14 @@
     minikube delete --all --purge || true
     docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
     docker container rm -f $(docker ps -a -q --filter "name=k8s_") || true
-    docker network prune -f
+    docker network prune -f || true
     rm -rf ~/.minikube ~/.kube
-    docker system prune -f
+    docker system prune -f || true
   ignore_errors: true
 
 - name: Sleep for a moment to ensure cleanup is complete
   pause:
     seconds: 10
-
-
-
 
 - name: Start Minikube
   shell: minikube start --driver=docker 
