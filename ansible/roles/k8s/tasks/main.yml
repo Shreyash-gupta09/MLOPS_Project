@@ -20,52 +20,44 @@
     minikube delete --all --purge || true
     docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
     docker container rm -f $(docker ps -a -q --filter "name=k8s_") || true
-    docker network prune -f || true
+    docker network prune -f
     rm -rf ~/.minikube ~/.kube
-    docker system prune -f || true
+    docker system prune -f
   ignore_errors: true
 
 - name: Sleep for a moment to ensure cleanup is complete
   pause:
-    seconds: 15
+    seconds: 10
 
-- name: Check Docker service status
-  service:
-    name: docker
-    state: started
-  become: true
-
-- name: Create minikube config directory
-  file:
-    path: ~/.minikube
-    state: directory
-    mode: '0755'
-
-- name: Start Minikube
-  shell: minikube start --driver=docker 
+- name: Start Minikube with increased memory and specific parameters
+  shell: minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
   become: false
+  register: minikube_start
   environment:
     PATH: "{{ ansible_env.PATH }}"
-    DOCKER_HOST: "unix:///var/run/docker.sock"
-    NO_PROXY: "localhost,127.0.0.1,192.168.49.0/24,192.168.58.0/24,10.96.0.0/12"
-
+  retries: 2
+  delay: 10
+  until: minikube_start.rc == 0
 
 - name: Enable Ingress controller in Minikube
   shell: minikube addons enable ingress
   become: false
   environment:
     PATH: "{{ ansible_env.PATH }}"
-  register: enable_ingress
-  retries: 3
-  delay: 10
-  until: enable_ingress.rc == 0
+  register: ingress_enable
+  retries: 2
+  delay: 5
+  until: ingress_enable.rc == 0
 
-- name: Get minikube IP
+- name: Get Minikube IP
   shell: minikube ip
   become: false
   register: minikube_ip
   environment:
     PATH: "{{ ansible_env.PATH }}"
+  retries: 3
+  delay: 5
+  until: minikube_ip.rc == 0
 
 - name: Add mlops.local to /etc/hosts
   become: true
