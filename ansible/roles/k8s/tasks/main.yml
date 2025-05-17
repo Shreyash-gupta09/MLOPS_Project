@@ -27,11 +27,46 @@
 
 - name: Sleep for a moment to ensure cleanup is complete
   pause:
-    seconds: 10
+    seconds: 15
 
-- name: Start Minikube
-  shell: minikube start --driver=docker 
+- name: Check Docker service status
+  service:
+    name: docker
+    state: started
+  become: true
+
+- name: Create minikube config directory
+  file:
+    path: ~/.minikube
+    state: directory
+    mode: '0755'
+
+- name: Start Minikube with increased resources and timeouts
+  shell: >
+    minikube start --driver=docker 
+    --cpus=2 --memory=3g 
+    --kubernetes-version=stable 
+    --insecure-registry="10.0.0.0/24" 
+    --apiserver-names="localhost,127.0.0.1" 
+    --wait=true 
+    --wait-timeout=600s
   become: false
+  environment:
+    PATH: "{{ ansible_env.PATH }}"
+    DOCKER_HOST: "unix:///var/run/docker.sock"
+    NO_PROXY: "localhost,127.0.0.1,192.168.49.0/24,192.168.58.0/24,10.96.0.0/12"
+  register: minikube_start
+  retries: 3
+  delay: 10
+  until: minikube_start.rc == 0
+
+- name: Wait for Minikube to be fully started
+  shell: kubectl cluster-info
+  become: false
+  register: result
+  until: result.rc == 0
+  retries: 10
+  delay: 30
   environment:
     PATH: "{{ ansible_env.PATH }}"
 
@@ -40,10 +75,21 @@
   become: false
   environment:
     PATH: "{{ ansible_env.PATH }}"
+  register: enable_ingress
+  retries: 3
+  delay: 10
+  until: enable_ingress.rc == 0
+
+- name: Get minikube IP
+  shell: minikube ip
+  become: false
+  register: minikube_ip
+  environment:
+    PATH: "{{ ansible_env.PATH }}"
 
 - name: Add mlops.local to /etc/hosts
   become: true
   lineinfile:
     path: /etc/hosts
-    line: "{{ lookup('pipe', 'minikube ip') }} mlops.local"
+    line: "{{ minikube_ip.stdout }} mlops.local"
     state: present
