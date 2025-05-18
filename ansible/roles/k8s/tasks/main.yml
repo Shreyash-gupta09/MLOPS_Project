@@ -7,55 +7,37 @@
   args:
     creates: /usr/local/bin/minikube
 
-- name: Remove any stale mlops.local and kibana.local entries from /etc/hosts
+- name: Remove any stale mlops.local entries from /etc/hosts
   become: true
-  shell: |
-    sed -i '/mlops\.local/d' /etc/hosts
-    sed -i '/kibana\.local/d' /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '.*mlops\.local'
+    state: absent
+    
+- name: Remove any stale kibana.local entries from /etc/hosts
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    regexp: '.*kibana\.local'
+    state: absent
 
-- name: More thorough Minikube cleanup
+- name: Thorough Minikube cleanup
   shell: |
-    # Stop minikube with increased timeout
-    minikube stop --all=true || true
-    # Delete minikube with purge
+    minikube stop || true
     minikube delete --all --purge || true
-    
-    # Kill any lingering minikube processes
-    pkill -f minikube || true
-    
-    # Remove docker containers more thoroughly
-    for container in $(docker ps -a --filter "name=k8s_" --format "{{.ID}}") $(docker ps -a --filter "name=minikube" --format "{{.ID}}"); do
-      docker stop $container || true
-      docker rm -f $container || true
-    done
-    
-    # Prune docker resources
+    docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
+    docker container rm -f $(docker ps -a -q --filter "name=k8s_") || true
     docker network prune -f
-    docker volume prune -f
-    
-    # Remove minikube files
     rm -rf ~/.minikube ~/.kube
-    
-    # Clean docker system
     docker system prune -f
-    
-    # Verify all minikube processes are gone
-    ps aux | grep -i minikube || true
   ignore_errors: true
 
-- name: Sleep for longer to ensure cleanup is complete
+- name: Sleep for a moment to ensure cleanup is complete
   pause:
-    seconds: 20
-
-- name: Verify Docker status
-  shell: docker info
-  register: docker_info
-  ignore_errors: true
+    seconds: 10
 
 - name: Start Minikube with increased memory and specific parameters
-  shell: |
-    # Fresh start with explicit cleanup
-    MINIKUBE_HOME=~/.minikube minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
+  shell: minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
   become: false
   register: minikube_start
   environment:
@@ -64,24 +46,14 @@
   delay: 10
   until: minikube_start.rc == 0
 
-- name: Verify Minikube is running properly
-  shell: minikube status
-  become: false
-  register: minikube_status
-  environment:
-    PATH: "{{ ansible_env.PATH }}"
-  retries: 2
-  delay: 5
-  until: minikube_status.rc == 0
-
 - name: Enable Ingress controller in Minikube
   shell: minikube addons enable ingress
   become: false
   environment:
     PATH: "{{ ansible_env.PATH }}"
   register: ingress_enable
-  retries: 3
-  delay: 10
+  retries: 2
+  delay: 5
   until: ingress_enable.rc == 0
 
 - name: Get Minikube IP
@@ -94,12 +66,16 @@
   delay: 5
   until: minikube_ip.rc == 0
 
-- name: Add mlops.local and kibana.local to /etc/hosts
+- name: Add mlops.local to /etc/hosts
   become: true
   lineinfile:
     path: /etc/hosts
-    line: "{{ minikube_ip.stdout }} {{ item }}"
+    line: "{{ minikube_ip.stdout }} mlops.local"
     state: present
-  with_items:
-    - mlops.local
-    - kibana.local
+    
+- name: Add kibana.local to /etc/hosts
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ minikube_ip.stdout }} kibana.local"
+    state: present
