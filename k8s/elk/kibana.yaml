@@ -1,3 +1,4 @@
+# Kibana Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,6 +22,7 @@ spec:
             - name: ELASTICSEARCH_HOSTS
               value: "http://elasticsearch:9200"
 ---
+# Kibana Service (ClusterIP)
 apiVersion: v1
 kind: Service
 metadata:
@@ -32,5 +34,24 @@ spec:
     - protocol: TCP
       port: 5601
       targetPort: 5601
-      nodePort: 30001
-  type: NodePort
+  type: ClusterIP
+---
+# Ingress for Kibana
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: kibana.local    
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kibana
+                port:
+                  number: 5601

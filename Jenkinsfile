@@ -23,16 +23,7 @@ pipeline {
             }
         }
 
-          stage('ELK Stack Setup') {
-            steps {
-                sh '''
-                    kubectl create namespace logging
-                    kubectl apply -f k8s/elk/ -n logging
-                    kubectl apply -f k8s/elk/fluent-bit/ -n logging
-                    kubectl get pods -n logging
-                '''
-            }
-        }
+
         
 
         stage('Build Backend Docker Image') {
@@ -82,8 +73,18 @@ pipeline {
                 sh 'echo "Deployments:" && kubectl get deployments'
             }
         }
-
-      stage('Wait for ELK Stack to be Ready') {
+    
+        stage('ELK Stack Setup') {
+            steps {
+                sh '''
+                    kubectl create namespace logging
+                    kubectl apply -f k8s/elk/ -n logging
+                    kubectl apply -f k8s/elk/fluent-bit/ -n logging
+                    kubectl get pods -n logging
+                '''
+            }
+        }
+        stage('Wait for ELK Stack to be Ready') {
             steps {
                 sh '''
                     echo "Waiting for Elasticsearch..."

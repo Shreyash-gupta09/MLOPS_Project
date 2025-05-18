@@ -14,6 +14,13 @@
     regexp: '.*mlops\.local'
     state: absent
     
+- name: Remove any stale kibana.local entries from /etc/hosts
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    regexp: '.*kibana\.local'
+    state: absent
+
 - name: Thorough Minikube cleanup
   shell: |
     minikube stop || true
@@ -64,4 +71,11 @@
   lineinfile:
     path: /etc/hosts
     line: "{{ minikube_ip.stdout }} mlops.local"
+    state: present
+    
+- name: Add kibana.local to /etc/hosts
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ minikube_ip.stdout }} kibana.local"
     state: present
