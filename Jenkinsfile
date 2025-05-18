@@ -12,6 +12,7 @@ pipeline {
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
@@ -41,18 +42,17 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
-    steps {
-        dir('ml-model/app') {
-            sh '''
-                python3 -m venv venv
-                ./venv/bin/pip install --upgrade pip
-                ./venv/bin/pip install pytest
-                ./venv/bin/pytest tests/
-            '''
+            steps {
+                dir('ml-model/app') {
+                    sh '''
+                        python3 -m venv venv
+                        ./venv/bin/pip install --upgrade pip
+                        ./venv/bin/pip install pytest
+                        ./venv/bin/pytest tests/
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Build Backend Docker Image') {
             steps {
