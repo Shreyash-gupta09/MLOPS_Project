@@ -44,12 +44,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 dir('ml-model/app') {
-                    sh '''
-                        python3 -m venv venv
-                        ./venv/bin/pip install --upgrade pip
-                        ./venv/bin/pip install pytest
-                        ./venv/bin/pytest tests/
-                    '''
+                    sh 'pytest tests/'
                 }
             }
         }
@@ -91,9 +86,11 @@ pipeline {
             steps {
                 sh 'kubectl rollout status deployment/backend-deployment'
                 sh 'kubectl rollout status deployment/frontend-deployment'
-                sh 'kubectl wait --for=condition=ready pod --all --timeout=2000s'
+                sh 'kubectl wait --for=condition=available deployment/backend-deployment --timeout=2000s'
+                sh 'kubectl wait --for=condition=available deployment/frontend-deployment --timeout=2000s'
             }
         }
+
 
         stage('Post-Deployment Verification') {
             steps {
