@@ -92,22 +92,44 @@ pipeline {
                 '''
             }
         }
+
         stage('Wait for ELK Stack to be Ready') {
-            steps {
-                sh '''
-                    echo "Waiting for Elasticsearch..."
-                kubectl rollout status deployment/elasticsearch -n logging
+    steps {
+        sh '''
+            echo "Waiting for Elasticsearch..."
+            kubectl rollout status deployment/elasticsearch -n logging
 
-                echo "Waiting for Kibana..."
-                kubectl rollout status deployment/kibana -n logging
+            echo "Waiting for Kibana deployment..."
+            kubectl rollout status deployment/kibana -n logging
 
-                echo "Waiting for Fluent Bit (DaemonSet)..."
-                kubectl rollout status daemonset/fluent-bit -n logging
+            echo "Waiting for Fluent Bit DaemonSet..."
+            kubectl rollout status daemonset/fluent-bit -n logging
 
-                echo "Waiting for all pods in logging namespace to be Ready..."
-                kubectl wait --for=condition=ready pod --all -n logging --timeout=2000s
-                '''
-            }
-        }
+            echo "Waiting for all pods in logging namespace to be Ready..."
+            kubectl wait --for=condition=ready pod --all -n logging --timeout=2000s
+
+            echo "Waiting for Kibana UI to respond at kibana.local..."
+
+            for i in $(seq 1 60); do
+                STATUS=$(curl -s http://kibana.local/api/status | grep -o '"state":"[a-z]*"' | cut -d':' -f2 | tr -d '"')
+                STATUS=${STATUS:-unknown}
+
+                if [ "$STATUS" = "green" ]; then
+                    echo "Kibana is now fully responsive (state: green)."
+                    break
+                else
+                    echo "Kibana state is '$STATUS' (not green). Retrying in 10s..."
+                    sleep 10
+                fi
+
+                if [ "$i" -eq 60 ]; then
+                    echo "Kibana did not become ready in time."
+                    exit 1
+                fi
+            done
+        '''
+    }
+}
+
     }
 }
