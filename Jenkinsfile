@@ -14,6 +14,14 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
             }
         }
+        
+        stage('Cleanup') {
+            steps {
+                sh 'pkill -f minikube || true'
+                sh 'docker ps -a | grep -E "k8s_|minikube" | awk \'{print $1}\' | xargs -r docker rm -f'
+                sh 'rm -rf ~/.minikube ~/.kube'
+            }
+        }
 
         stage('Infrastructure Setup') {
             steps {
