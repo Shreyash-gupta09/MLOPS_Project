@@ -25,8 +25,8 @@ pipeline {
             }
             steps {
                 sh 'pkill -f minikube || true'
-                sh 'docker ps -a | grep -E "k8s_|minikube" | awk \'{print $1}\' | xargs -r docker rm -f || true'
-                sh 'rm -rf ~/.minikube ~/.kube || true'
+                sh 'docker ps -a | grep -E "k8s_|minikube" | awk \'{print $1}\' | xargs -r docker rm -f'
+                sh 'rm -rf ~/.minikube ~/.kube'
             }
         }
 
@@ -90,12 +90,9 @@ pipeline {
         }
 
         stage('ELK Stack Setup') {
-            when {
-                expression { params.RUN_INFRA }
-            }
             steps {
                 sh '''
-                    kubectl create namespace logging || true
+                    kubectl create namespace logging
                     kubectl apply -f k8s/elk/ -n logging
                     kubectl apply -f k8s/elk/fluent-bit/ -n logging
                 '''
@@ -103,9 +100,6 @@ pipeline {
         }
 
         stage('Wait for ELK Stack to be Ready') {
-            when {
-                expression { params.RUN_INFRA }
-            }
             steps {
                 sh '''
                     echo "Waiting for Elasticsearch..."
