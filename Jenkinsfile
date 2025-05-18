@@ -23,16 +23,17 @@ pipeline {
             }
         }
 
-        // stage('ELK Stack Setup') {
-        //     steps {
-        //         sh '''
-        //             kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
-        //             kubectl apply -f k8s/elk/ -n logging
-        //             kubectl apply -f k8s/elk/fluent-bit/ -n logging
-        //             kubectl get pods -n logging
-        //         '''
-        //     }
-        // }
+          stage('ELK Stack Setup') {
+            steps {
+                sh '''
+                    kubectl create namespace logging
+                    kubectl apply -f k8s/elk/ -n logging
+                    kubectl apply -f k8s/elk/fluent-bit/ -n logging
+                    kubectl get pods -n logging
+                '''
+            }
+        }
+        
 
         stage('Build Backend Docker Image') {
             steps {
@@ -81,5 +82,22 @@ pipeline {
                 sh 'echo "Deployments:" && kubectl get deployments'
             }
         }
-    }
+
+      stage('Wait for ELK Stack to be Ready') {
+            steps {
+                sh '''
+                    echo "Waiting for Elasticsearch..."
+                kubectl rollout status deployment/elasticsearch -n logging
+
+                echo "Waiting for Kibana..."
+                kubectl rollout status deployment/kibana -n logging
+
+                echo "Waiting for Fluent Bit (DaemonSet)..."
+                kubectl rollout status daemonset/fluent-bit -n logging
+
+                echo "Waiting for all pods in logging namespace to be Ready..."
+                kubectl wait --for=condition=ready pod --all -n logging --timeout=2000s
+                '''
+            }
+        }
 }

@@ -49,8 +49,4 @@
     name: kibana
     state: present
 
-- name: Enable and start Kibana
-  systemd:
-    name: kibana
-    enabled: yes
-    state: started
+
