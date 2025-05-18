@@ -1,81 +1,81 @@
-- name: Install Minikube and kubectl
-  shell: |
-    curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-    install minikube-linux-amd64 /usr/local/bin/minikube
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-  args:
-    creates: /usr/local/bin/minikube
+# - name: Install Minikube and kubectl
+#   shell: |
+#     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+#     install minikube-linux-amd64 /usr/local/bin/minikube
+#     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+#     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+#   args:
+#     creates: /usr/local/bin/minikube
 
-- name: Remove any stale mlops.local entries from /etc/hosts
-  become: true
-  lineinfile:
-    path: /etc/hosts
-    regexp: '.*mlops\.local'
-    state: absent
+# - name: Remove any stale mlops.local entries from /etc/hosts
+#   become: true
+#   lineinfile:
+#     path: /etc/hosts
+#     regexp: '.*mlops\.local'
+#     state: absent
     
-- name: Remove any stale kibana.local entries from /etc/hosts
-  become: true
-  lineinfile:
-    path: /etc/hosts
-    regexp: '.*kibana\.local'
-    state: absent
+# - name: Remove any stale kibana.local entries from /etc/hosts
+#   become: true
+#   lineinfile:
+#     path: /etc/hosts
+#     regexp: '.*kibana\.local'
+#     state: absent
 
-- name: Thorough Minikube cleanup
-  shell: |
-    minikube stop || true
-    minikube delete --all --purge || true
-    docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
-    docker container rm -f $(docker ps -a -q --filter "name=k8s_") || true
-    docker network prune -f
-    rm -rf ~/.minikube ~/.kube
-    docker system prune -f
-  ignore_errors: true
+# - name: Thorough Minikube cleanup
+#   shell: |
+#     minikube stop || true
+#     minikube delete --all --purge || true
+#     docker container rm -f $(docker ps -a -q --filter "name=minikube") || true
+#     docker container rm -f $(docker ps -a -q --filter "name=k8s_") || true
+#     docker network prune -f
+#     rm -rf ~/.minikube ~/.kube
+#     docker system prune -f
+#   ignore_errors: true
 
-- name: Sleep for a moment to ensure cleanup is complete
-  pause:
-    seconds: 10
+# - name: Sleep for a moment to ensure cleanup is complete
+#   pause:
+#     seconds: 10
 
-- name: Start Minikube with increased memory and specific parameters
-  shell: minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
-  become: false
-  register: minikube_start
-  environment:
-    PATH: "{{ ansible_env.PATH }}"
-  retries: 2
-  delay: 10
-  until: minikube_start.rc == 0
+# - name: Start Minikube with increased memory and specific parameters
+#   shell: minikube start --driver=docker --memory=3g --cpus=2 --kubernetes-version=stable --delete-on-failure=true
+#   become: false
+#   register: minikube_start
+#   environment:
+#     PATH: "{{ ansible_env.PATH }}"
+#   retries: 2
+#   delay: 10
+#   until: minikube_start.rc == 0
 
-- name: Enable Ingress controller in Minikube
-  shell: minikube addons enable ingress
-  become: false
-  environment:
-    PATH: "{{ ansible_env.PATH }}"
-  register: ingress_enable
-  retries: 2
-  delay: 5
-  until: ingress_enable.rc == 0
+# - name: Enable Ingress controller in Minikube
+#   shell: minikube addons enable ingress
+#   become: false
+#   environment:
+#     PATH: "{{ ansible_env.PATH }}"
+#   register: ingress_enable
+#   retries: 2
+#   delay: 5
+#   until: ingress_enable.rc == 0
 
-- name: Get Minikube IP
-  shell: minikube ip
-  become: false
-  register: minikube_ip
-  environment:
-    PATH: "{{ ansible_env.PATH }}"
-  retries: 3
-  delay: 5
-  until: minikube_ip.rc == 0
+# - name: Get Minikube IP
+#   shell: minikube ip
+#   become: false
+#   register: minikube_ip
+#   environment:
+#     PATH: "{{ ansible_env.PATH }}"
+#   retries: 3
+#   delay: 5
+#   until: minikube_ip.rc == 0
 
-- name: Add mlops.local to /etc/hosts
-  become: true
-  lineinfile:
-    path: /etc/hosts
-    line: "{{ minikube_ip.stdout }} mlops.local"
-    state: present
+# - name: Add mlops.local to /etc/hosts
+#   become: true
+#   lineinfile:
+#     path: /etc/hosts
+#     line: "{{ minikube_ip.stdout }} mlops.local"
+#     state: present
     
-- name: Add kibana.local to /etc/hosts
-  become: true
-  lineinfile:
-    path: /etc/hosts
-    line: "{{ minikube_ip.stdout }} kibana.local"
-    state: present
+# - name: Add kibana.local to /etc/hosts
+#   become: true
+#   lineinfile:
+#     path: /etc/hosts
+#     line: "{{ minikube_ip.stdout }} kibana.local"
+#     state: present
