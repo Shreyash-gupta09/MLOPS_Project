@@ -41,18 +41,18 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
-            steps {
-                dir('ml-model/app') {
-                    sh '''
+    steps {
+        dir('ml-model/app') {
+            sh '''
                 python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install pytest
-                pytest tests/
+                ./venv/bin/pip install --upgrade pip
+                ./venv/bin/pip install pytest
+                ./venv/bin/pytest tests/
             '''
-                }
-            }
         }
+    }
+}
+
 
         stage('Build Backend Docker Image') {
             steps {
