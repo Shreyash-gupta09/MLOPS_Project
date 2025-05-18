@@ -41,6 +41,17 @@ pipeline {
             }
         }
 
+        stage('Run Unit Tests') {
+            steps {
+                dir('ml-model/app') {
+                    sh '''
+                        pip install pytest
+                        pytest tests/
+                    '''
+                }
+            }
+        }
+
         stage('Build Backend Docker Image') {
             steps {
                 sh 'docker build -t $IMAGE_NAME_BACKEND -f ml-model/Dockerfile.backend ml-model'
