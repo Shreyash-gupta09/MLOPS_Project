@@ -29,7 +29,7 @@ function App() {
 
   return (
     <div className="app">
-      <h1>🎬 Movie Recommender v2</h1>
+      <h1>🎬 Movie Recommender</h1>
 
       <div className="input-container">
         <input
