@@ -7,6 +7,10 @@ pipeline {
         REACT_APP_API_BASE_URL = 'http://mlops.local/api'
     }
 
+    parameters {
+        booleanParam(name: 'RUN_INFRA', defaultValue: false, description: 'Run Infrastructure and ELK setup?')
+    }
+
     stages {
 
         stage('Clone Repository') {
@@ -14,25 +18,28 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Shreyash-gupta09/MLOPS_Project.git'
             }
         }
-        
+
         stage('Cleanup') {
+            when {
+                expression { params.RUN_INFRA }
+            }
             steps {
                 sh 'pkill -f minikube || true'
-                sh 'docker ps -a | grep -E "k8s_|minikube" | awk \'{print $1}\' | xargs -r docker rm -f'
-                sh 'rm -rf ~/.minikube ~/.kube'
+                sh 'docker ps -a | grep -E "k8s_|minikube" | awk \'{print $1}\' | xargs -r docker rm -f || true'
+                sh 'rm -rf ~/.minikube ~/.kube || true'
             }
         }
 
         stage('Infrastructure Setup') {
+            when {
+                expression { params.RUN_INFRA }
+            }
             steps {
                 dir('ansible') {
                     sh 'ansible-playbook -i inventory.ini site.yml'
                 }
             }
         }
-
-
-        
 
         stage('Build Backend Docker Image') {
             steps {
@@ -81,31 +88,37 @@ pipeline {
                 sh 'echo "Deployments:" && kubectl get deployments'
             }
         }
-    
+
         stage('ELK Stack Setup') {
+            when {
+                expression { params.RUN_INFRA }
+            }
             steps {
                 sh '''
-                    kubectl create namespace logging
+                    kubectl create namespace logging || true
                     kubectl apply -f k8s/elk/ -n logging
                     kubectl apply -f k8s/elk/fluent-bit/ -n logging
-                    kubectl get pods -n logging
                 '''
             }
         }
+
         stage('Wait for ELK Stack to be Ready') {
+            when {
+                expression { params.RUN_INFRA }
+            }
             steps {
                 sh '''
                     echo "Waiting for Elasticsearch..."
-                kubectl rollout status deployment/elasticsearch -n logging
+                    kubectl rollout status deployment/elasticsearch -n logging
 
-                echo "Waiting for Kibana..."
-                kubectl rollout status deployment/kibana -n logging
+                    echo "Waiting for Kibana..."
+                    kubectl rollout status deployment/kibana -n logging
 
-                echo "Waiting for Fluent Bit (DaemonSet)..."
-                kubectl rollout status daemonset/fluent-bit -n logging
+                    echo "Waiting for Fluent Bit (DaemonSet)..."
+                    kubectl rollout status daemonset/fluent-bit -n logging
 
-                echo "Waiting for all pods in logging namespace to be Ready..."
-                kubectl wait --for=condition=ready pod --all -n logging --timeout=2000s
+                    echo "Waiting for all pods in logging namespace to be Ready..."
+                    kubectl wait --for=condition=ready pod --all -n logging --timeout=2000s
                 '''
             }
         }
